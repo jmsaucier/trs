@@ -4,6 +4,7 @@ import random
 import twitchapiretriever
 from oauth import OAuthSignIn
 from threading import Timer
+import ConfigParser
 
 print "Starting matrix load..."
 graphMatrix = marshal.load(open('graphMatrixFilled.dat', 'rb'))
@@ -35,9 +36,9 @@ def refreshChannelCache():
 #    tempChannelCache[channelLookupById[i][1]] = i
 
     liveChannelCache = tempChannelCache
-
-    cacheTimer = Timer(300.0, refreshChannelCache)
-    cacheTimer.start()
+    if __name__ != '__main__':
+        cacheTimer = Timer(300.0, refreshChannelCache)
+        cacheTimer.start()
 
 def getChannelIdsForUserName(name, totalChannels):
     global dbUser, dbPass, dbName
@@ -102,31 +103,37 @@ def generateDetailedRecommendationListForUser(follower):
 
 def generateRecommendationListForUser(follower):
     global graphMatrix, channelLookupById
+    #retrieve followers that are live
     totalFollowedChannels = getChannelIdsForUserName(follower, max(channelLookupById))
     followedChannels = filter(lambda x: not x in liveChannelCache, totalFollowedChannels)
 
-    if len(totalFollowedChannels) > 20:
+    #pair down list for easier analysis
+    if len(followedChannels) > 20:
         followedChannels = random.sample(totalFollowedChannels, 20)
 
-    if len(totalFollowedChannels) == 0:
+    #they are not in the DB, so we need to generate random recommendations
+    if follower == '' or len(totalFollowedChannels) == 0:
         totalFollowedChannels = random.sample(liveChannelCache, 20)
         followedChannels = filter(lambda x: not x in liveChannelCache, totalFollowedChannels)
 
 
     uniqueViewerWorkingDict = {}
 
+    #all channels are equal
     for i in followedChannels:
-        uniqueViewerWorkingDict[i] = graphMatrix[i][i]
+        uniqueViewerWorkingDict[i] = 1000
 
-    #for i in range(len(followedChannels)):
-    #    for j in range(i + 1, len(followedChannels)):
-    #        iId = followedChannels[i]
-    #        jId = followedChannels[j]
-    #        uniqueViewerWorkingDict[jId] -= uniqueViewerWorkingDict[iId] * (graphMatrix[iId][jId] / float(graphMatrix[iId][iId]))
-        #update_progress((i + 1) / float(len(followedChannels)))
+    #try to grab unique viewers across all channels
+    for i in range(len(followedChannels)):
+       for j in range(i + 1, len(followedChannels)):
+           iId = followedChannels[i]
+           jId = followedChannels[j]
+           uniqueViewerWorkingDict[jId] -= uniqueViewerWorkingDict[iId] * (graphMatrix[iId][jId] / float(graphMatrix[iId][iId]))
 
+    #initialize recommendation array
     possibleRecommendations = [float(0)] * len(graphMatrix)
 
+    #compute recommendation
     for i in range(len(followedChannels)):
         for j in range(len(possibleRecommendations)):
             iId = followedChannels[i]
@@ -136,13 +143,19 @@ def generateRecommendationListForUser(follower):
                 possibleRecommendations[j] += graphMatrixFollowing * uniqueViewerCount
         #update_progress((i + 1) / float(len(followedChannels)))
 
-    recommendations = [i for i in sorted(enumerate(possibleRecommendations), key=lambda x: x[1], reverse=True)]
+    #filterout the unknown
+    recommendations = [i for i in sorted(enumerate(possibleRecommendations), key=lambda x: x[1] / float(graphMatrix[x[0]][x[0]] + 1), reverse=True)]
     recommendations = filter(lambda x: (not x[0] in totalFollowedChannels) and x[0] in channelLookupById and channelLookupById[x[0]][1] in liveChannelCache,recommendations )
     recommendations = map(lambda x: channelLookupById[x[0]][1], recommendations)
     recommendations = map(lambda x: [x,liveChannelCache[x]], recommendations)
+    limitedRecommendation = recommendations[:min(len(recommendations), 50)]
 
-    return recommendations[:10]
+    return limitedRecommendation
+
 print "Starting refresh of channel cache..."
 refreshChannelCache()
 if __name__ == '__main__':
-    generateRecommendationListForUser('bledahm')
+    print "Running recommendations"
+    recommendations = generateRecommendationListForUser('bledahm')
+    for i in recommendations:
+        print i[0], i[1]
