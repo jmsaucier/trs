@@ -19,7 +19,7 @@ def getAccessToken(client_id, client_secret, code, redirect_uri):
     return token
 
 def getUserInformation(client_id, access_token):
-    
+
     headers = {'Authorization': 'OAuth ' + access_token,
                'Accept': 'application/vnd/twitchtv.v3+json',
                'Client-Id': client_id}
@@ -33,30 +33,30 @@ def getUserInformation(client_id, access_token):
 def isChannelLive(client_id, channel):
     headers = {'Accept': 'application/vnd/twitchtv.v3+json',
                'Client-Id': client_id}
-    
+
     r = requests.get('https://api.twitch.tv/kraken/streams/' + channel, headers=headers)
-    
+
     result = r.json()
 
     return result['stream'] != None
 
-def getStreamingChannels(client_id, limit = 5):
+def getStreamingChannels(client_id, limit = 50):
 
-    
+
     headers = {'Accept': 'application/vnd/twitchtv.v3+json',
                'Client-Id': client_id}
-    
+
     r = requests.get('https://api.twitch.tv/kraken/streams?limit=100&offset=0', headers=headers)
-   
+
     data = r.json()
     num = len(data["streams"])
     ret = []
     while(num == 100 and data["streams"][0]["viewers"] > limit):
-        #print data['streams'][len(data['streams']) - 1]['viewers']
+        print data['streams'][len(data['streams']) - 1]['viewers']
         for stream in data["streams"]:
             ret += [(stream["channel"]["name"], stream["game"])]
         r = requests.get(data['_links']['next'], headers=headers)
-   
+
         data = r.json()
         num = len(data["streams"])
 

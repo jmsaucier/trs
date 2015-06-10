@@ -1,7 +1,8 @@
 extends layout
 
 block content
-    
+
+    script(src='/static/scripts/app.js')
     link(rel='stylesheet', type='text/css', href='/static/content/carousel.css')
     br
     .jumbotron
@@ -14,55 +15,3 @@ block content
             a.right.carousel-control(href='#carousel-container', role='button', data-slide='next')
                 span.glyphicon.glyphicon-chevron-right(aria-hidden='true')
                 span.sr-only Next
-        
-    script(type='text/javascript').
-        function getChannelPreviewDiv(id,channel){
-            var ret = '';
-
-            ret += '<div id="carousel-item-'+id+'" class="item">'
-
-
-            ret += '<img src="http://static-cdn.jtvnw.net/previews-ttv/live_user_'+channel+'-960x540.jpg" />'
-            ret += '<div class="container">'
-            ret += '<div class="carousel-caption">'
-            ret += '<p><a class="btn btn-lg- btn-primary" href="http://twitch.tv/'+channel+'">http://twitch.tv/'+channel+'<br/>'+channel+'</a></p>'
-            //ret += '<p>'+channel+'</p>'
-            ret += '</a>'
-            ret += '</div>'
-            ret += '</div>'
-            ret += '</div>'
-
-            return ret;
-        }
-
-        currentChannels = []
-
-        $(document).ready(function(){
-            
-            $('.carousel').carousel({
-                interval: false
-            });
-
-            $.ajax({
-                url: '/recommend/',
-                success: function(data){
-                    $('#btnGetRecommendations').hide();
-                    var container = $('#carousel-inner-container');
-                    container.empty();
-                    data = JSON.parse(data);
-                    for(i in data) {
-                        var channelName = data[i]    
-
-                        container.append(getChannelPreviewDiv(i,channelName));
-                            
-                    }
-
-                    $('#carousel-inner-container div:first').addClass('active');
-
-
-
-
-                }
-            });
-        
-        }); 

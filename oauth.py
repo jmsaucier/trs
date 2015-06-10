@@ -31,16 +31,16 @@ class OAuthSignIn:
     def authorize(self):
         url = ''
         try:
-            url = self.get_authorize_url(response_type='code', scope='user_read+user_subscriptions', redirect_uri=self.get_callback_url())
+            url = self.get_authorize_url(response_type='code', scope='user_read', redirect_uri=self.get_callback_url())
         except Exception as e:
             print e
-            
+
         return redirect(url)
-    
+
     def callback(self):
         if not 'code' in request.args:
-            return redirect(url_for('error')) 
-        
+            return redirect(url_for('error'))
+
         try:
             session['oauth_access_token'] = twitchapiretriever.getAccessToken(self.client_id, self.client_secret, request.args['code'], self.get_callback_url())
         except Exception as e:
@@ -51,4 +51,3 @@ class OAuthSignIn:
 
     def get_callback_url(self):
         return url_for('oauth_callback', _external=True)
-

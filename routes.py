@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask import render_template, session, redirect, request, make_response
+from flask import render_template, session, redirect, request, make_response, url_for
 import json
 from app import app
 from oauth import OAuthSignIn
@@ -7,28 +7,27 @@ import twitchrecommender
 
 
 @app.route('/', methods=['GET','POST'])
-@app.route('/home', methods=['GET','POST'])
 def home():
-
-
     if 'oauth_access_token' in session and session['oauth_access_token'] != '':
-
-        return render_template(
-            'index.jade',
-            title = 'Home Page',
-            year = datetime.now().year,
-        )
+        try:
+            return render_template('index.jade',title = 'Home Page',year = datetime.now().year, username=session['username'])
+        except Exception as e:
+            print e, 'A'
     else:
-        auth = OAuthSignIn()
-        return auth.authorize()
+        try:
+
+            return render_template('index.jade',title = 'Home Page',year = datetime.now().year, username='')
+
+        except Exception as e:
+            print e, 'C'
 
 @app.route('/recommend/')
 def recommend():
     try:
         recommendations = twitchrecommender.generateRecommendationListForUser(session['username'])
+        return make_response(json.dumps(recommendations))
     except Exception as e:
-        print e
-    return make_response(json.dumps(recommendations))
+        print e, 'B'
 
 @app.route('/error')
 def error():
@@ -52,12 +51,13 @@ def oauth_authorize():
 def oauth_callback():
     auth = OAuthSignIn()
     return auth.callback()
-  
+
 @app.route('/logout')
 def logout():
     if('oauth_access_token' in session):
-        del session['oauth_access_token']
-
+        session['oauth_access_token'] = ''
+        session['username'] = ''
+    return redirect(url_for('home'))
 @app.route('/about')
 def about():
     return render_template(
@@ -66,4 +66,3 @@ def about():
         year = datetime.now().year,
         message = 'Your application description page.'
     )
-

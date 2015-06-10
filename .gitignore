@@ -23,6 +23,8 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+obj/
+bin/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -31,7 +33,7 @@ var/
 *.spec
 
 # Installer logs
-pip-log.txt
+pip-log.txtp
 pip-delete-this-directory.txt
 
 # Unit test / coverage reports
@@ -56,3 +58,9 @@ docs/_build/
 
 # PyBuilder
 target/
+
+#Configs
+*.cfg
+
+#GraphData
+*.dat

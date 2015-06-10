@@ -1,0 +1,12 @@
+[AppSettings]
+secret_key={SESSIONSECRETKEY}
+host={SERVERHOST}
+port={SERVERPORT}
+db_user={DBUSERNAME}
+db_pass={DBPASSWORD}
+db_name={DBNAME}
+[OAuthSettings]
+client_id={TWITCHCLIENTID}
+client_secret={TWITCHCLIENTSECRET}
+authorize_url={TWITCHAUTHURL}
+access_token_url={TWITCHAUTHTOKENURL}
