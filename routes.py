@@ -29,6 +29,15 @@ def recommend():
     except Exception as e:
         print e, 'B'
 
+@app.route('/preauth', methods=['GET','POST'])
+def preauth():
+    #if(request.method == 'POST'):
+    #    auth = OAuthSignIn()
+    #    return auth.authorize()
+    try:
+        return render_template('preauth.jade', title = 'Pre Auth', UrlFor = url_for('preauth'))
+    except Exception as e:
+        print e
 @app.route('/error')
 def error():
     return render_template()

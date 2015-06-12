@@ -1,0 +1,9 @@
+extends layout
+
+block content
+    form(method="POST",action="#{UrlFor}")
+        div.checkbox.form-group
+            label
+                input(type="checkbox", name="user_read")
+                text Read non-public user information
+        input.btn.btn-default(type="submit")

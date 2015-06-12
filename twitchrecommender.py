@@ -7,7 +7,7 @@ from threading import Timer
 import ConfigParser
 
 print "Starting matrix load..."
-graphMatrix = marshal.load(open('graphMatrixFilled.dat', 'rb'))
+#graphMatrix = marshal.load(open('graphMatrixFilled.dat', 'rb'))
 
 print "Starting lookup load..."
 channelLookupById = marshal.load(open('channelLookupById.dat','rb'))
