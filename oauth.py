@@ -3,16 +3,17 @@ import requests
 import urllib
 import twitchapiretriever
 import random
+import string
 
 class OAuthSignIn:
-    def __init__(self):
-        self.client_id = 'nz9rv717f6opzo1ygy8q1njckkodvyq'
-        self.client_secret = 'eubfb4y384qnnmam41vs1xkiht5xur9'
-        self.authorize_url = 'https://api.twitch.tv/kraken/oauth2/authorize'
-        self.access_token_url = 'https://api.twitch.tv/kraken/oauth2/token'
+    def __init__(self, app):
+        self.client_id = app.config['client_id']
+        self.client_secret = app.config['client_secret']
+        self.authorize_url = app.config['authorize_url']
+        self.access_token_url = app.config['access_token_url']
 
     def generateRandomUsername(self):
-        return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(15))
+        return str(''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(15)))
 
     def get_authorize_url(self, scope=None, response_type=None, redirect_uri=None):
         url = self.authorize_url

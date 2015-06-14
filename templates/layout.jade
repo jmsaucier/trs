@@ -27,7 +27,7 @@ html
               a(href='/contact') Contact
           ul.nav.navbar-nav.pull-right
             li
-              if username == '':
+              if username == '' or isAnonymous:
                 a(href='/preauth') Login
               else:
                 a(href='/logout') Logout

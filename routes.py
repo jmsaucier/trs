@@ -5,7 +5,7 @@ from app import app
 from oauth import OAuthSignIn
 import twitchrecommender
 import time
-
+import sys
 
 @app.route('/', methods=['GET','POST'])
 def home():
@@ -14,19 +14,19 @@ def home():
         if('oauth_access_token' in session and session['oauth_access_token'] != ''):
             session['isAnonymous'] = False
         else:
-            auth = OAuthSignIn()
+            auth = OAuthSignIn(app)
             #random username used for recommendation storage
             session['username'] = auth.generateRandomUsername()
             session['isAnonymous'] = True
 
     if ('oauth_access_token' in session and session['oauth_access_token'] != '') or ('isAnonymous' in session and session['isAnonymous'] == False):
         try:
-            return render_template('index.jade',title = 'Home Page',year = datetime.now().year, username=session['username'])
+            return render_template('index.jade',title = 'Home Page',year = datetime.now().year, username=session['username'], isAnonymous = session['isAnonymous'])
         except Exception as e:
             print e, 'A'
     else:
         try:
-            return render_template('index.jade',title = 'Home Page',year = datetime.now().year, username='')
+            return render_template('index.jade',title = 'Home Page',year = datetime.now().year, username='', isAnonymous = session['isAnonymous'])
 
         except Exception as e:
             print e, 'C'
@@ -40,23 +40,46 @@ def recommend():
 
         #if user is not logged in or does not have a random username assigned, then we should give them one
         if((not 'username' in session) or session['username'] == ''):
-            auth = OAuthSignIn()
+            auth = OAuthSignIn(app)
             session['username'] = auth.generateRandomUsername()
+            session['isAnonymous'] = True
 
-        storeFollowerRecommendations(session['username'],_recommendations)
+        twitchrecommender.storeFollowerRecommendations(session['username'],_recommendations)
         session['rec_time_out'] = time.time() + 900
-        return redirect(url_for('recommendations', id=1))
+        session['dir'] = 'up'
+        return redirect(url_for('recommendations', rank=1))
     except Exception as e:
-        print e, 'B'
+
+        print e, 'B', sys.exc_traceback.tb_lineno
 
 @app.route('/recommendations/<int:rank>')
 def recommendations(rank):
-    if not ('rec_time_out' in session and 'recommendations' in session) or time.time() > session['rec_time_out']:
+    if not ('rec_time_out' in session) or time.time() > session['rec_time_out']:
         return redirect(url_for('recommend'))
 
-    recommendation = twitchrecommender.retrieveFollowerRecommendation(session['username'], rank)
 
-    return render_template('recommendations.jade', channel = recommendation)
+
+    recommendation = twitchrecommender.retrieveFollowerRecommendation(session['username'], rank - 1)
+
+    channelInfo = twitchapiretriever.getChannelInfo(app.)
+
+    if(channelInfo["stream"] == None):
+        return render_template('recommendations.jade',
+            isAnonymous = session['isAnonymous'],
+            channel = recommendation[0],
+            game=recommendation[1],
+            offline = True,
+            rank = rank)
+    else:
+            return render_template('recommendations.jade',
+                isAnonymous = session['isAnonymous'],
+                channel = recommendation[0],
+                game=recommendation[1],
+                offline = False,
+                logo = channelInfo["stream"]["logo"],
+                banner = channelInfo["stream"]["banner"],
+                display_name = channelInfo["stream"]["display_name"],
+                rank = rank)
 
 @app.route('/preauth', methods=['GET','POST'])
 def preauth():
@@ -69,7 +92,7 @@ def preauth():
             if(len(scope_list) > 0):
                 for i in range(0, len(scope_list)):
                     auth_scope += '+' + scope_list[i]
-            auth = OAuthSignIn()
+            auth = OAuthSignIn(app)
             return auth.authorize(auth_scope)
         return render_template('preauth.jade', title = 'Pre Auth', UrlFor = url_for('preauth'))
     except Exception as e:
@@ -89,17 +112,17 @@ def contact():
 
 @app.route('/authorize/')
 def oauth_authorize():
-    auth = OAuthSignIn()
+    auth = OAuthSignIn(app)
     return auth.authorize()
 
 @app.route('/callback/')
 def oauth_callback():
     try:
-        auth = OAuthSignIn()
+        auth = OAuthSignIn(app)
         return auth.callback()
     except Exception as e:
         print e
-        auth = OAuthSignIn()
+        auth = OAuthSignIn(app)
         session['username'] = auth.generateRandomUsername()
         session['isAnonymous'] = True
         return redirect(url_for('home'))

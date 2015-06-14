@@ -31,7 +31,7 @@ def getUserInformation(client_id, access_token):
 
     return user
 
-def isChannelLive(client_id, channel):
+def getChannelInfo(client_id, channel):
     headers = {'Accept': 'application/vnd/twitchtv.v3+json',
                'Client-Id': client_id}
 
@@ -39,7 +39,7 @@ def isChannelLive(client_id, channel):
 
     result = r.json()
 
-    return result['stream'] != None
+    return result
 
 def getStreamingChannels(client_id, limit = 50):
 
