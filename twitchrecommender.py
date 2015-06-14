@@ -6,8 +6,11 @@ from oauth import OAuthSignIn
 from threading import Timer
 import ConfigParser
 
+from pymongo import MongoClient
+
+
 print "Starting matrix load..."
-#graphMatrix = marshal.load(open('graphMatrixFilled.dat', 'rb'))
+graphMatrix = marshal.load(open('graphMatrixFilled.dat', 'rb'))
 
 print "Starting lookup load..."
 channelLookupById = marshal.load(open('channelLookupById.dat','rb'))
@@ -65,6 +68,26 @@ def getChannelIdsForUserName(name, totalChannels):
     conn.commit()
     conn.close()
     return ret
+
+def storeFollowerRecommendations(follower, recommendations):
+    client = MongoClient()
+    db = client.trs
+    collection = db.recommendations
+    #clear all previous recommendations
+    collection.remove({"follower":follower})
+
+
+    insertDocs = []
+    for i in range(len(recommendations)):
+        insertDocs += [{"follower":follower, "recommendation":x, "rank":i}]
+    collection.insert_many(insertDocs)
+
+def retrieveFollowerRecommendation(follower, rank):
+    client = MongoClient()
+    db = client.trs
+    collection = db.recommendations
+    result = collection.find_one({"follower":follower, "rank":rank})
+    return result["recommendation"]
 
 def generateDetailedRecommendationListForUser(follower):
     global graphMatrix, channelLookupById

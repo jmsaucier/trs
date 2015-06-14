@@ -9,40 +9,54 @@ import time
 
 @app.route('/', methods=['GET','POST'])
 def home():
-    if 'oauth_access_token' in session and session['oauth_access_token'] != '':
+
+    if( not 'isAnonymous' in session):
+        if('oauth_access_token' in session and session['oauth_access_token'] != ''):
+            session['isAnonymous'] = False
+        else:
+            auth = OAuthSignIn()
+            #random username used for recommendation storage
+            session['username'] = auth.generateRandomUsername()
+            session['isAnonymous'] = True
+
+    if ('oauth_access_token' in session and session['oauth_access_token'] != '') or ('isAnonymous' in session and session['isAnonymous'] == False):
         try:
             return render_template('index.jade',title = 'Home Page',year = datetime.now().year, username=session['username'])
         except Exception as e:
             print e, 'A'
     else:
         try:
-
             return render_template('index.jade',title = 'Home Page',year = datetime.now().year, username='')
 
         except Exception as e:
             print e, 'C'
+            return redirect(url_for('error'))
 
 @app.route('/recommend/')
 def recommend():
     try:
+
         _recommendations = twitchrecommender.generateRecommendationListForUser(session['username'])
-        session['recommendations'] = _recommendations
-        session['recTimeOut'] = time.time() + 900
+
+        #if user is not logged in or does not have a random username assigned, then we should give them one
+        if((not 'username' in session) or session['username'] == ''):
+            auth = OAuthSignIn()
+            session['username'] = auth.generateRandomUsername()
+
+        storeFollowerRecommendations(session['username'],_recommendations)
+        session['rec_time_out'] = time.time() + 900
         return redirect(url_for('recommendations', id=1))
     except Exception as e:
         print e, 'B'
 
-@app.route('/recommendations/<int:id>')
-def recommendations(id):
-    if not ('recTimeOut' in session and 'recommendations' in session):
+@app.route('/recommendations/<int:rank>')
+def recommendations(rank):
+    if not ('rec_time_out' in session and 'recommendations' in session) or time.time() > session['rec_time_out']:
         return redirect(url_for('recommend'))
 
-    _recommendations = session['recommendations']
+    recommendation = twitchrecommender.retrieveFollowerRecommendation(session['username'], rank)
 
-    if (id < 1 or id > len(_recommendations)):
-        return redirect(url_for('recommend'))
-
-    return render_template('recommendations.jade', channel = session['recommendations'][id])
+    return render_template('recommendations.jade', channel = recommendation)
 
 @app.route('/preauth', methods=['GET','POST'])
 def preauth():
@@ -80,8 +94,15 @@ def oauth_authorize():
 
 @app.route('/callback/')
 def oauth_callback():
-    auth = OAuthSignIn()
-    return auth.callback()
+    try:
+        auth = OAuthSignIn()
+        return auth.callback()
+    except Exception as e:
+        print e
+        auth = OAuthSignIn()
+        session['username'] = auth.generateRandomUsername()
+        session['isAnonymous'] = True
+        return redirect(url_for('home'))
 
 @app.route('/logout')
 def logout():

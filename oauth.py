@@ -2,6 +2,7 @@ from flask import session, request, redirect, url_for
 import requests
 import urllib
 import twitchapiretriever
+import random
 
 class OAuthSignIn:
     def __init__(self):
@@ -9,6 +10,10 @@ class OAuthSignIn:
         self.client_secret = 'eubfb4y384qnnmam41vs1xkiht5xur9'
         self.authorize_url = 'https://api.twitch.tv/kraken/oauth2/authorize'
         self.access_token_url = 'https://api.twitch.tv/kraken/oauth2/token'
+
+    def generateRandomUsername(self):
+        return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(15))
+
     def get_authorize_url(self, scope=None, response_type=None, redirect_uri=None):
         url = self.authorize_url
         if scope or response_type or redirect_uri:
