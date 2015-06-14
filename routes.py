@@ -4,6 +4,7 @@ import json
 from app import app
 from oauth import OAuthSignIn
 import twitchrecommender
+import time
 
 
 @app.route('/', methods=['GET','POST'])
@@ -24,10 +25,24 @@ def home():
 @app.route('/recommend/')
 def recommend():
     try:
-        recommendations = twitchrecommender.generateRecommendationListForUser(session['username'])
-        return make_response(json.dumps(recommendations))
+        _recommendations = twitchrecommender.generateRecommendationListForUser(session['username'])
+        session['recommendations'] = _recommendations
+        session['recTimeOut'] = time.time() + 900
+        return redirect(url_for('recommendations', id=1))
     except Exception as e:
         print e, 'B'
+
+@app.route('/recommendations/<int:id>')
+def recommendations(id):
+    if not ('recTimeOut' in session and 'recommendations' in session):
+        return redirect(url_for('recommend'))
+
+    _recommendations = session['recommendations']
+
+    if (id < 1 or id > len(_recommendations)):
+        return redirect(url_for('recommend'))
+
+    return render_template('recommendations.jade', channel = session['recommendations'][id])
 
 @app.route('/preauth', methods=['GET','POST'])
 def preauth():
