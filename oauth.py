@@ -28,10 +28,10 @@ class OAuthSignIn:
         return url
 
 
-    def authorize(self):
+    def authorize(self, auth_scope):
         url = ''
         try:
-            url = self.get_authorize_url(response_type='code', scope='user_read', redirect_uri=self.get_callback_url())
+            url = self.get_authorize_url(response_type='code', scope=auth_scope, redirect_uri=self.get_callback_url())
         except Exception as e:
             print e
 

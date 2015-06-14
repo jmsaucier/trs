@@ -1,11 +1,15 @@
 extends layout
 
 block content
-
-
-    div.row
-        div.col-xs-offset-2.col-xs-8
-            p This is a website dedicated to recommending new streams for you to watch. If you are logged in, it will recommend streams based on those you have viewed and followed, but if you are not logged in, you will see recommendations that have been given based on random followers.
-            p Click below to start your recommendations, and it will start your journey! It it possible that you will encounter recommendations that are no longer online, if that happens, feel free to return here and start your recommendations again, or continue on and skip the stream that is no longer online.
-
-        
+    br
+    .row
+        .col-md-8.col-md-offset-2
+            .jumbotron
+                p This is a website dedicated to recommending new streams for you to watch. If you are logged in, it will recommend streams based on those you have viewed and followed, but if you are not logged in, you will see recommendations that have been given based on random followers.
+                p Click below to start your recommendations, and it will start your journey! It it possible that you will encounter recommendations that are no longer online, if that happens, feel free to return here and start your recommendations again, or continue on and skip the stream that is no longer online.
+                .btn-group
+                    if(username == ''):
+                        a(href="/preauth").btn.btn-primary Personal Recommendation
+                        a(href="/recommend").btn.btn-success Random Recommendation
+                    else:
+                        a(href="/preauth").btn.btn-primary Personal Recommendation

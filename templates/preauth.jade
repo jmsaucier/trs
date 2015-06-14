@@ -1,9 +1,43 @@
-extends layout
+doctype html
+html
+  head
+    meta(charset='utf-8')
+    meta(name='viewport', content='width=device-width, initial-scale=1.0')
+    title #{title}
+    link(rel='stylesheet', type='text/css', href='/static/content/bootstrap.min.css')
+    link(rel='stylesheet', type='text/css', href='/static/content/site.css')
+    script(src='/static/scripts/modernizr-2.6.2.js')
+    script(src='/static/scripts/jquery-1.10.2.js')
+  body
+    .container.body-content
 
-block content
-    form(method="POST",action="#{UrlFor}")
-        div.checkbox.form-group
-            label
-                input(type="checkbox", name="user_read")
-                text Read non-public user information
-        input.btn.btn-default(type="submit")
+        .jumbotron.col-md-6.col-md-offset-3
+            link(rel='stylesheet', type='text/css', href='/static/content/awesome-bootstrap-checkbox.css')
+
+            form(method="POST",action="#{UrlFor}")
+                div
+                    input.checkbox-primary(type="checkbox", id="user_read", name="user_read", checked="checked", disabled="disabled")
+                    label(for="user_read") View non-public user information
+                    span.glyphicon.glyphicon-info-sign(style="margin-left:5px", data-toggle="tooltip", data-placement="top", title="Needed to get username, and channels that are being followed.")
+                div
+                    input.checkbox-primary(type="checkbox", id="user_subscriptions", name="user_subscriptions")
+                    label(for="user_subscriptions") View all paid subscriptions
+                    span.glyphicon.glyphicon-info-sign(style="margin-left:5px", data-toggle="tooltip", data-placement="top", title="Wanted for better recommendations. I assume you care more about those you subscribe to.")
+                div
+                    input.checkbox-primary(type="checkbox", id="channel_subscriptions", name="channel_subscriptions")
+                    label(for="channel_subscriptions") View all channel subscriptions
+                    span.glyphicon.glyphicon-info-sign(style="margin-left:5px", data-toggle="tooltip", data-placement="top", title="Provides better recommendations for your subscribers and followers. Useful, but only supply it if you want to.")
+                .form-group
+                    .btn-group
+                        input.btn.btn-primary(type="submit", value="Authorize")
+                        a(href="/").btn.btn-success Cancel
+
+
+    script(src='/static/scripts/bootstrap.js')
+    script(src='/static/scripts/respond.js')
+    script.
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        })
+
+    block scripts

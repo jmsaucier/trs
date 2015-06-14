@@ -1,6 +1,7 @@
 import requests
 import urllib
 import json
+import time
 
 def getAccessToken(client_id, client_secret, code, redirect_uri):
     postData = ''
@@ -25,7 +26,7 @@ def getUserInformation(client_id, access_token):
                'Client-Id': client_id}
 
     r = requests.get('https://api.twitch.tv/kraken/user', headers=headers)
-    
+
     user = r.json()
 
     return user
@@ -58,6 +59,9 @@ def getStreamingChannels(client_id, limit = 50):
         r = requests.get(data['_links']['next'], headers=headers)
 
         data = r.json()
+
+        time.sleep(1)
+
         num = len(data["streams"])
 
     for stream in data["streams"]:

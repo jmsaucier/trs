@@ -31,10 +31,17 @@ def recommend():
 
 @app.route('/preauth', methods=['GET','POST'])
 def preauth():
-    #if(request.method == 'POST'):
-    #    auth = OAuthSignIn()
-    #    return auth.authorize()
     try:
+        print request.method
+        if(request.method == 'POST'):
+
+            scope_list =  list(request.form)
+            auth_scope = 'user_read'
+            if(len(scope_list) > 0):
+                for i in range(0, len(scope_list)):
+                    auth_scope += '+' + scope_list[i]
+            auth = OAuthSignIn()
+            return auth.authorize(auth_scope)
         return render_template('preauth.jade', title = 'Pre Auth', UrlFor = url_for('preauth'))
     except Exception as e:
         print e
