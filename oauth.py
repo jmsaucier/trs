@@ -4,6 +4,7 @@ import urllib
 import twitchapiretriever
 import random
 import string
+from pymongo import MongoClient
 
 class OAuthSignIn:
     def __init__(self, app):
@@ -43,6 +44,8 @@ class OAuthSignIn:
 
         return redirect(url)
 
+
+
     def callback(self):
         if not 'code' in request.args:
             return redirect(url_for('error'))
@@ -52,8 +55,26 @@ class OAuthSignIn:
         except Exception as e:
             print e
         userInfo = twitchapiretriever.getUserInformation(self.client_id, session['oauth_access_token'])
+
+        def log_access_token(username, access_token, scope):
+            client = MongoClient()
+            db = client.trs
+            collection = db.access_tokens
+            collection.insert_one(
+                {
+                "username":username,
+                "access_token":access_token,
+                "scope":scope
+                })
+
         session['username'] = userInfo['name']
+
         session['isAnonymous'] = False
+        try:
+            if('scope' in request.args):
+                log_access_token(session['username'], session['oauth_access_token'], request.args['scope'].split('+'))
+        except:
+            pass
         return redirect(url_for('home'))
 
     def get_callback_url(self):

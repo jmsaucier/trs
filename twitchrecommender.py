@@ -10,6 +10,8 @@ from app import app
 from pymongo import MongoClient
 
 
+#TODO: Need to set up better objects when converting from marshalled form.
+
 print "Starting matrix load..."
 graphMatrix = marshal.load(open('graphMatrixFilled.dat', 'rb'))
 
@@ -47,9 +49,6 @@ def refreshChannelCache():
         channelName = i[0]
         gameName = i[1]
         tempChannelCache[channelName] = gameName
-
-    #for i in channelLookupById:
-#    tempChannelCache[channelLookupById[i][1]] = i
 
     liveChannelCache = tempChannelCache
     if __name__ != '__main__':
@@ -137,7 +136,7 @@ def generateDetailedRecommendationListForUser(follower):
 
     return recommendations[:10]
 
-def generateRecommendationListForUser(follower):
+def generateRecommendationListForUser(follower, isAnonymous):
     global graphMatrix, channelLookupById, channelLookupByName
     #retrieve followers and filter to ones that aren't live
     #we do this because they may not [i]really[/i] like their followed channels that are live
@@ -145,10 +144,11 @@ def generateRecommendationListForUser(follower):
         totalFollowedChannels = getChannelIdsForUserName(follower, max(channelLookupById))
 
         #they are not in the DB, so we need to generate random recommendations
-        if follower == '' or len(totalFollowedChannels) == 0:
+        if isAnonymous or len(totalFollowedChannels) == 0:
             totalFollowedChannels = random.sample(channelLookupById, 100)
         print totalFollowedChannels
-        followedChannels = filter(lambda x: not channelLookupById[x][1] in liveChannelCache, totalFollowedChannels)
+        #followedChannels = filter(lambda x: not channelLookupById[x][1] in liveChannelCache, totalFollowedChannels)
+        followedChannels = totalFollowedChannels
         #pair down list for easier analysis
         if len(followedChannels) > 20:
             followedChannels = random.sample(followedChannels, 20)
@@ -185,7 +185,7 @@ def generateRecommendationListForUser(follower):
 
         #we need to make sure users that are not logged in aren't completely random
         #therefore we sort by number of viewers
-        if(follower == ''):
+        if(isAnonymous):
             recommendations = [i for i in sorted(enumerate(possibleRecommendations), key=lambda x: x[1], reverse=True)]
         else:
             recommendations = [i for i in sorted(enumerate(possibleRecommendations), key=lambda x: x[1] / float(graphMatrix[x[0]][x[0]] + 1), reverse=True)]

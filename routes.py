@@ -37,13 +37,16 @@ def home():
 def recommend():
     try:
 
-        _recommendations = twitchrecommender.generateRecommendationListForUser(session['username'])
 
         #if user is not logged in or does not have a random username assigned, then we should give them one
-        if((not 'username' in session) or session['username'] == ''):
+        if((not 'username' in session) or session['username'] == '' or (not 'isAnonymous' in session)):
             auth = OAuthSignIn(app)
             session['username'] = auth.generateRandomUsername()
             session['isAnonymous'] = True
+
+
+        _recommendations = twitchrecommender.generateRecommendationListForUser(session['username'], session['isAnonymous'])
+
 
         twitchrecommender.storeFollowerRecommendations(session['username'],_recommendations)
         session['rec_time_out'] = time.time() + 900
