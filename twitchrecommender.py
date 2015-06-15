@@ -156,11 +156,11 @@ def generateRecommendationListForUser(follower):
 
         uniqueViewerWorkingDict = {}
 
-        #for now, all channels are created equal
+        #all channels based on viewer count
         #this will change later when viewing multiple days actually counts for something
-        #ie: i watched sevadus for 3 days, therefore he means a lot to me <3
+        #ie: i watched sevadus for a ton of days, therefore he means a lot to me <3
         for i in followedChannels:
-            uniqueViewerWorkingDict[i] = 1000
+            uniqueViewerWorkingDict[i] = graphMatrix[i][i]
 
         #try to grab unique viewers across all channels
         for i in range(len(followedChannels)):
@@ -204,8 +204,9 @@ def generateRecommendationListForUser(follower):
         limitedRecommendation = recommendations[:min(len(recommendations), 50)]
 
         return limitedRecommendation
-    except:
-        print sys.exc_traceback.tb_lineno
+    except Exception as e:
+        print "ERROR", e, sys.exc_traceback.tb_lineno
+        return []
 print "Starting refresh of channel cache..."
 refreshChannelCache()
 if __name__ == '__main__':
