@@ -53,6 +53,7 @@ class OAuthSignIn:
             print e
         userInfo = twitchapiretriever.getUserInformation(self.client_id, session['oauth_access_token'])
         session['username'] = userInfo['name']
+        session['isAnonymous'] = False
         return redirect(url_for('home'))
 
     def get_callback_url(self):

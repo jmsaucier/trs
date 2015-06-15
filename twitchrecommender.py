@@ -6,7 +6,7 @@ from oauth import OAuthSignIn
 from threading import Timer
 import ConfigParser
 import sys
-
+from app import app
 from pymongo import MongoClient
 
 
@@ -23,7 +23,7 @@ for i in channelLookupById:
     channelLookupByName[name] = channelLookupById
 
 liveChannelCache = {}
-auth = OAuthSignIn()
+auth = OAuthSignIn(app)
 
 config = ConfigParser.RawConfigParser()
 config.read('settings.cfg')

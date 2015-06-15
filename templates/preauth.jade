@@ -12,13 +12,16 @@ html
     .container.body-content
 
         .jumbotron.col-md-6.col-md-offset-3
+            h2 Choose the scope of your authentication.
+            h3 Only the first one is required.
+
             link(rel='stylesheet', type='text/css', href='/static/content/awesome-bootstrap-checkbox.css')
 
             form(method="POST",action="#{UrlFor}")
                 div
                     input.checkbox-primary(type="checkbox", id="user_read", name="user_read", checked="checked", disabled="disabled")
                     label(for="user_read") View non-public user information
-                    span.glyphicon.glyphicon-info-sign(style="margin-left:5px", data-toggle="tooltip", data-placement="top", title="Needed to get username, and channels that are being followed.")
+                    span.glyphicon.glyphicon-info-sign(style="margin-left:5px", data-toggle="tooltip", data-placement="top", title="Needed to get username.")
                 div
                     input.checkbox-primary(type="checkbox", id="user_subscriptions", name="user_subscriptions")
                     label(for="user_subscriptions") View all paid subscriptions

@@ -4,6 +4,7 @@ import json
 from app import app
 from oauth import OAuthSignIn
 import twitchrecommender
+import twitchapiretriever
 import time
 import sys
 
@@ -54,33 +55,52 @@ def recommend():
 
 @app.route('/recommendations/<int:rank>')
 def recommendations(rank):
-    if not ('rec_time_out' in session) or time.time() > session['rec_time_out']:
-        return redirect(url_for('recommend'))
+    try:
+        if not ('rec_time_out' in session) or time.time() > session['rec_time_out']:
+            return redirect(url_for('recommend'))
 
+        recommendation = twitchrecommender.retrieveFollowerRecommendation(session['username'], rank - 1)
 
-
-    recommendation = twitchrecommender.retrieveFollowerRecommendation(session['username'], rank - 1)
-
-    channelInfo = twitchapiretriever.getChannelInfo(app.)
-
-    if(channelInfo["stream"] == None):
-        return render_template('recommendations.jade',
-            isAnonymous = session['isAnonymous'],
-            channel = recommendation[0],
-            game=recommendation[1],
-            offline = True,
-            rank = rank)
-    else:
+        channelInfo = twitchapiretriever.getChannelInfo(app.config['client_id'], recommendation[0])
+        print channelInfo
+        if(channelInfo["stream"] == None):
             return render_template('recommendations.jade',
                 isAnonymous = session['isAnonymous'],
                 channel = recommendation[0],
                 game=recommendation[1],
-                offline = False,
-                logo = channelInfo["stream"]["logo"],
-                banner = channelInfo["stream"]["banner"],
-                display_name = channelInfo["stream"]["display_name"],
+                offline = True,
                 rank = rank)
+        else:
 
+            def format_logo(logo):
+                return logo.replace('300x300', '150x150')
+            def intWithCommas(x):
+                x = int(x)
+                if type(x) not in [type(0), type(0L)]:
+                    raise TypeError("Parameter must be an integer.")
+                if x < 0:
+                    return '-' + intWithCommas(-x)
+                result = ''
+                while x >= 1000:
+                    x, r = divmod(x, 1000)
+                    result = ",%03d%s" % (r, result)
+                return "%d%s" % (x, result)
+
+            return render_template('recommendations.jade',
+                isAnonymous = session['isAnonymous'],
+                channel = recommendation[0],
+                game=channelInfo["stream"]["game"],
+                offline = False,
+                logo = format_logo(channelInfo["stream"]["channel"]["logo"]) if channelInfo["stream"]["channel"]["logo"] != None else "http://static-cdn.jtvnw.net/jtv_user_pictures/xarth/404_user_150x150.png",
+                display_name = channelInfo["stream"]["channel"]["display_name"],
+                rank = rank,
+                str=str,
+                viewers=intWithCommas(channelInfo["stream"]["viewers"]),
+                views=intWithCommas(channelInfo["stream"]["channel"]["views"]),
+                followers=intWithCommas(channelInfo["stream"]["channel"]["followers"])
+                )
+    except Exception as e:
+        print e, sys.exc_traceback.tb_lineno
 @app.route('/preauth', methods=['GET','POST'])
 def preauth():
     try:
