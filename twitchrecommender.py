@@ -185,7 +185,7 @@ def generateRecommendationListForUser(follower, isAnonymous):
 
         #we need to make sure users that are not logged in aren't completely random
         #therefore we sort by number of viewers
-        if(isAnonymous):
+        if(True):
             recommendations = [i for i in sorted(enumerate(possibleRecommendations), key=lambda x: x[1], reverse=True)]
         else:
             recommendations = [i for i in sorted(enumerate(possibleRecommendations), key=lambda x: x[1] / float(graphMatrix[x[0]][x[0]] + 1), reverse=True)]
@@ -211,7 +211,7 @@ print "Starting refresh of channel cache..."
 refreshChannelCache()
 if __name__ == '__main__':
     print "Running recommendations"
-    for j in range(3):
-        recommendations = generateRecommendationListForUser('')
+    for j in range(1):
+        recommendations = generateRecommendationListForUser('shannonzkiller')
         for i in range(len(recommendations)):
             print i,recommendations[i][0], recommendations[i][1]

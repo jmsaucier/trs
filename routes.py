@@ -36,8 +36,6 @@ def home():
 @app.route('/recommend/')
 def recommend():
     try:
-
-
         #if user is not logged in or does not have a random username assigned, then we should give them one
         if((not 'username' in session) or session['username'] == '' or (not 'isAnonymous' in session)):
             auth = OAuthSignIn(app)
@@ -88,20 +86,22 @@ def recommendations(rank):
                     x, r = divmod(x, 1000)
                     result = ",%03d%s" % (r, result)
                 return "%d%s" % (x, result)
-
-            return render_template('recommendations.jade',
-                isAnonymous = session['isAnonymous'],
-                channel = recommendation[0],
-                game=channelInfo["stream"]["game"],
-                offline = False,
-                logo = format_logo(channelInfo["stream"]["channel"]["logo"]) if channelInfo["stream"]["channel"]["logo"] != None else "http://static-cdn.jtvnw.net/jtv_user_pictures/xarth/404_user_150x150.png",
-                display_name = channelInfo["stream"]["channel"]["display_name"],
-                rank = rank,
-                str=str,
-                viewers=intWithCommas(channelInfo["stream"]["viewers"]),
-                views=intWithCommas(channelInfo["stream"]["channel"]["views"]),
-                followers=intWithCommas(channelInfo["stream"]["channel"]["followers"])
-                )
+            try:
+                return render_template('recommendations.jade',
+                    isAnonymous = session['isAnonymous'],
+                    channel = recommendation[0],
+                    game=channelInfo["stream"]["game"],
+                    offline = False,
+                    logo = format_logo(channelInfo["stream"]["channel"]["logo"]) if channelInfo["stream"]["channel"]["logo"] != None else "http://static-cdn.jtvnw.net/jtv_user_pictures/xarth/404_user_150x150.png",
+                    display_name = channelInfo["stream"]["channel"]["display_name"],
+                    rank = rank,
+                    str=str,
+                    viewers=intWithCommas(channelInfo["stream"]["viewers"]),
+                    views=intWithCommas(channelInfo["stream"]["channel"]["views"]),
+                    followers=intWithCommas(channelInfo["stream"]["channel"]["followers"])
+                    )
+            except:
+                return redirect(url_for('recommendations', rank=rank+1))
     except Exception as e:
         print e, sys.exc_traceback.tb_lineno
 @app.route('/preauth', methods=['GET','POST'])
