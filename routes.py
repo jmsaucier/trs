@@ -70,7 +70,8 @@ def recommendations(rank):
                 channel = recommendation[0],
                 game=recommendation[1],
                 offline = True,
-                rank = rank)
+                rank = rank,
+                str=str)
         else:
 
             def format_logo(logo):
@@ -86,7 +87,7 @@ def recommendations(rank):
                     x, r = divmod(x, 1000)
                     result = ",%03d%s" % (r, result)
                 return "%d%s" % (x, result)
-            try:
+
                 return render_template('recommendations.jade',
                     isAnonymous = session['isAnonymous'],
                     channel = recommendation[0],
@@ -100,8 +101,6 @@ def recommendations(rank):
                     views=intWithCommas(channelInfo["stream"]["channel"]["views"]),
                     followers=intWithCommas(channelInfo["stream"]["channel"]["followers"])
                     )
-            except:
-                return redirect(url_for('recommendations', rank=rank+1))
     except Exception as e:
         print e, sys.exc_traceback.tb_lineno
 @app.route('/preauth', methods=['GET','POST'])
